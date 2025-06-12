@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мій кабінет — Притулок для тварин</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo-block">
+            <img src="logo.png" alt="Логотип" class="logo">
+            <span class="logo-title">Притулок для тварин</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Головна</a></li>
+                <li><a href="animals.html">Наші тварини</a></li>
+                <li><a href="help.html">Як допомогти</a></li>
+                <li><a href="contacts.html">Контакти</a></li>
+                <li><a href="auth.html" id="auth-link">Вхід/Реєстрація</a></li>
+                <li><a href="mycabinet.html" id="cabinet-link" class="active">Мій кабінет</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="cabinet">
+            <h2>Мій кабінет</h2>
+            <div id="cabinet-user"></div>
+            <div id="cabinet-animals"></div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Притулок для тварин</p>
+    </footer>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const user = localStorage.getItem('currentUser');
+        const userDiv = document.getElementById('cabinet-user');
+        const animalsDiv = document.getElementById('cabinet-animals');
+        if (!user) {
+            userDiv.innerHTML = '<b>Ви не увійшли в акаунт.</b>';
+            animalsDiv.innerHTML = '';
+            return;
+        }
+        userDiv.innerHTML = `<b>Вітаємо, ${user}!</b>`;
+        const adopted = JSON.parse(localStorage.getItem('adopted_' + user) || '[]');
+        if (adopted.length === 0) {
+            animalsDiv.innerHTML = '<p>Ви ще не вибрали жодної тварини.</p>';
+        } else {
+            animalsDiv.innerHTML = '<h3>Обрані тварини:</h3>';
+            const list = document.createElement('div');
+            list.className = 'animal-list';
+            adopted.forEach((animal, idx) => {
+                const card = document.createElement('div');
+                card.className = 'animal-card';
+                card.innerHTML = `
+                    <img src="${animal.image || animal.img}" alt="${animal.name}" style="width:90px;height:90px;object-fit:cover;">
+                    <h3>${animal.name}</h3>
+                    <p>${animal.description || animal.desc}</p>
+                    <span class="animal-type">${animal.type}</span><br>
+                    <button class="adopt-btn" id="adopt-btn-${idx}">Забрати</button>
+                    <button class="remove-btn" id="remove-btn-${idx}">Відмовитись від опіки</button>
+                `;
+                list.appendChild(card);
+            });
+            animalsDiv.appendChild(list);
+            adopted.forEach((animal, idx) => {
+                document.getElementById(`remove-btn-${idx}`).onclick = function() {
+                    const user = localStorage.getItem('currentUser');
+                    let adopted = JSON.parse(localStorage.getItem('adopted_' + user) || '[]');
+                    adopted.splice(idx, 1);
+                    localStorage.setItem('adopted_' + user, JSON.stringify(adopted));
+                    showCenteredMessage('ДУЖЕ ШКОДА, АЛЕ...', '#d32f2f');
+                    setTimeout(() => window.location.reload(), 2500);
+                };
+                document.getElementById(`adopt-btn-${idx}`).onclick = function() {
+                    // Видалити з adopted і з бази тварин
+                    const user = localStorage.getItem('currentUser');
+                    let adopted = JSON.parse(localStorage.getItem('adopted_' + user) || '[]');
+                    const animalToRemove = adopted[idx];
+                    adopted.splice(idx, 1);
+                    localStorage.setItem('adopted_' + user, JSON.stringify(adopted));
+                    // Видалити з бази тварин
+                    let animals = JSON.parse(localStorage.getItem('animals') || '[]');
+                    animals = animals.filter(a => !(a.name === animalToRemove.name && a.description === (animalToRemove.description || animalToRemove.desc)));
+                    localStorage.setItem('animals', JSON.stringify(animals));
+                    showCenteredMessage('Скоро вам зателефонують!', '#388e3c');
+                    setTimeout(() => window.location.reload(), 2500);
+                };
+            });
+        }
+    });
+
+    function updateHeaderButtons() {
+        const user = localStorage.getItem('currentUser');
+        const authLink = document.getElementById('auth-link');
+        const cabinetLink = document.getElementById('cabinet-link');
+        if (user) {
+            if (authLink) authLink.style.display = 'none';
+            if (cabinetLink) {
+                cabinetLink.style.display = 'inline-block';
+                if (!document.getElementById('logout-header-btn')) {
+                    const logoutBtn = document.createElement('button');
+                    logoutBtn.textContent = 'Вийти';
+                    logoutBtn.className = 'logout-btn';
+                    logoutBtn.id = 'logout-header-btn';
+                    logoutBtn.style.marginLeft = '10px';
+                    logoutBtn.onclick = function() {
+                        localStorage.removeItem('currentUser');
+                        window.location.reload();
+                    };
+                    cabinetLink.parentNode.appendChild(logoutBtn);
+                }
+            }
+        } else {
+            if (authLink) authLink.style.display = 'inline-block';
+            if (cabinetLink) cabinetLink.style.display = 'inline-block';
+            const logoutBtn = document.getElementById('logout-header-btn');
+            if (logoutBtn) logoutBtn.remove();
+        }
+    }
+    document.addEventListener('DOMContentLoaded', updateHeaderButtons);
+
+    function showCenteredMessage(text, color) {
+        let msg = document.createElement('div');
+        msg.textContent = text;
+        msg.style.position = 'fixed';
+        msg.style.top = '50%';
+        msg.style.left = '50%';
+        msg.style.transform = 'translate(-50%, -50%)';
+        msg.style.background = '#fff';
+        msg.style.padding = '40px 60px';
+        msg.style.borderRadius = '18px';
+        msg.style.boxShadow = '0 4px 32px #a259ff55';
+        msg.style.fontSize = '2.2rem';
+        msg.style.fontWeight = 'bold';
+        msg.style.color = color;
+        msg.style.textAlign = 'center';
+        msg.style.zIndex = 9999;
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2500);
+    }
+    </script>
+</body>
+</html> 

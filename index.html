@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Притулок для тварин</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo-block">
+            <img src="logo.png" alt="Логотип" class="logo">
+            <span class="logo-title">Притулок для тварин</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="active">Головна</a></li>
+                <li><a href="animals.html">Наші тварини</a></li>
+                <li><a href="help.html">Як допомогти</a></li>
+                <li><a href="contacts.html">Контакти</a></li>
+                <li><a href="auth.html" id="auth-link">Вхід/Реєстрація</a></li>
+                <li><a href="mycabinet.html" id="cabinet-link">Мій кабінет</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="home">
+            <h1>Ласкаво просимо до притулку для тварин!</h1>
+            <div style="text-align:center; margin-bottom: 18px;">
+                <img src="logo.png" alt="Логотип" style="width:130px; height:130px; border-radius:50%; box-shadow:0 2px 12px #b983ff55; background:#fff;">
+            </div>
+            <p>Наш притулок — це місце, де кожна тварина отримує другий шанс на щасливе життя. Ми рятуємо, лікуємо, доглядаємо та шукаємо нові домівки для котів і собак, які опинилися у біді.</p>
+            <p>Наша команда складається з небайдужих волонтерів, ветеринарів та просто любителів тварин. Ми віримо, що кожен заслуговує на любов і турботу. За роки роботи ми допомогли знайти дім сотням тварин, і не зупиняємось!</p>
+            <p>На нашому сайті ви можете:
+                <ul>
+                    <li>Познайомитися з нашими улюbленцями</li>
+                    <li>Дізнатися, як допомогти притулку</li>
+                    <li>Зв'язатися з нами або стати волонтером</li>
+                    <li>Зареєструватися для участі у житті притулку</li>
+                </ul>
+            </p>
+            <p class="highlight">Разом ми можемо більше! Приєднуйтесь до нашої великої родини друзів тварин.</p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Притулок для тварин</p>
+    </footer>
+    <script>
+        function updateHeaderButtons() {
+            const user = localStorage.getItem('currentUser');
+            const authLink = document.getElementById('auth-link');
+            const cabinetLink = document.getElementById('cabinet-link');
+            if (user) {
+                if (authLink) authLink.style.display = 'none';
+                if (cabinetLink) {
+                    cabinetLink.style.display = 'inline-block';
+                    if (!document.getElementById('logout-header-btn')) {
+                        const logoutBtn = document.createElement('button');
+                        logoutBtn.textContent = 'Вийти';
+                        logoutBtn.className = 'btn btn-secondary';
+                        logoutBtn.id = 'logout-header-btn';
+                        logoutBtn.style.marginLeft = '10px';
+                        logoutBtn.onclick = function() {
+                            localStorage.removeItem('currentUser');
+                            window.location.reload();
+                        };
+                        cabinetLink.parentNode.appendChild(logoutBtn);
+                    }
+                }
+            } else {
+                if (authLink) authLink.style.display = 'inline-block';
+                if (cabinetLink) cabinetLink.style.display = 'inline-block';
+                const logoutBtn = document.getElementById('logout-header-btn');
+                if (logoutBtn) logoutBtn.remove();
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateHeaderButtons);
+    </script>
+</body>
+</html> 

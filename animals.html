@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Наші тварини — Притулок для тварин</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .animal-card { border: 1px solid #ccc; margin: 10px; padding: 10px; display: inline-block; width: 200px; vertical-align: top; }
+        .animal-card img { width: 100%; height: 150px; object-fit: cover; }
+        #admin-panel { background: #f8f8ff; padding: 20px; border-radius: 10px; margin-bottom: 20px; max-width: 400px; display: none; }
+        #edit-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+        #edit-form { background:#fff; padding:20px; border-radius:8px; max-width:400px; width:90%; }
+        .admin-btn { margin: 0 5px; }
+        #admin-login-form { display: none; margin-bottom: 20px; }
+        .filter-btns {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .filter-btn {
+            background: #e0c3fc;
+            border: none;
+            color: #4b006e;
+            padding: 10px 24px;
+            margin: 0 5px;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: #a18cd1;
+            color: #fff;
+        }
+        /* Модалка */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 30px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            max-width: 350px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .modal-content label {
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .save-btn {
+            background: #a18cd1;
+            color: #fff;
+        }
+        .save-btn:hover {
+            background: #7b5fa6;
+        }
+        .cancel-btn {
+            background: #eee;
+            color: #333;
+        }
+        .cancel-btn:hover {
+            background: #ccc;
+        }
+        .admin-btn {
+            background: #e0c3fc;
+            color: #4b006e;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 28px;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: background 0.2s, color 0.2s;
+        }
+        .admin-btn:hover {
+            background: #a18cd1;
+            color: #fff;
+        }
+        .animal-modal-img {
+            max-height: 70px;
+            width: 100%;
+            max-width: 120px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 12px auto;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-block">
+            <img src="logo.png" alt="Логотип" class="logo">
+            <span class="logo-title">Притулок для тварин</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Головна</a></li>
+                <li><a href="animals.html" class="active">Наші тварини</a></li>
+                <li><a href="help.html">Як допомогти</a></li>
+                <li><a href="contacts.html">Контакти</a></li>
+                <li><a href="auth.html" id="auth-link">Вхід/Реєстрація</a></li>
+                <li><a href="mycabinet.html" id="cabinet-link">Мій кабінет</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="animals">
+            <h2>Наші тварини</h2>
+            <div class="filter-btns">
+                <button id="filter-all" class="filter-btn active">Всі</button>
+                <button id="filter-cats" class="filter-btn">Коти</button>
+                <button id="filter-dogs" class="filter-btn">Собаки</button>
+            </div>
+            <div id="animal-list"></div>
+        </section>
+
+        <!-- Адмін-панель -->
+        <div id="admin-panel">
+            <h3>Додати тварину</h3>
+            <form id="add-animal-form">
+                <input type="text" name="name" placeholder="Ім'я" required><br><br>
+                <input type="file" name="image" accept="image/*" required><br><br>
+                <input type="text" name="breed" placeholder="Порода" required><br><br>
+                <input type="text" name="description" placeholder="Опис" required><br><br>
+                <button type="submit">Додати</button>
+            </form>
+        </div>
+
+        <!-- Модалка редагування -->
+        <div id="edit-modal" class="modal">
+            <form id="edit-form" class="modal-content">
+                <h2>Редагувати тварину</h2>
+                <label>
+                    Ім'я:
+                    <input type="text" name="edit-name" required>
+                </label>
+                <label>
+                    Фото:
+                    <input type="file" name="edit-image-file" accept="image/*">
+                </label>
+                <label>
+                    Опис:
+                    <input type="text" name="edit-description" required>
+                </label>
+                <div class="modal-actions">
+                    <button type="submit" class="btn save-btn">Зберегти</button>
+                    <button type="button" id="cancel-edit" class="btn cancel-btn">Відмінити</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Модальне вікно -->
+        <div id="animal-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <img id="modal-img" src="" alt="Фото тварини" class="animal-modal-img">
+                <h3 id="modal-name"></h3>
+                <p id="modal-desc"></p>
+                <ul class="modal-info">
+                    <li><b>Тип:</b> <span id="modal-type"></span></li>
+                    <li><b>Вік:</b> <span id="modal-age"></span></li>
+                    <li><b>Стать:</b> <span id="modal-gender"></span></li>
+                    <li><b>Здоров'я:</b> <span id="modal-health"></span></li>
+                </ul>
+                <button id="adopt-btn">Забрати</button>
+            </div>
+        </div>
+
+        <!-- Модалка для детальної інформації -->
+        <div id="info-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+            <div style="background:#fff; padding:20px; border-radius:8px; max-width:400px; width:90%; position:relative;">
+                <button id="close-info" style="position:absolute; top:10px; right:10px;">X</button>
+                <img id="info-img" src="" alt="" style="width:100%; height:200px; object-fit:cover;">
+                <h2 id="info-name"></h2>
+                <p id="info-desc"></p>
+                <p><b>Порода:</b> <span id="info-breed"></span></p>
+                <p><b>Тип:</b> <span id="info-type"></span></p>
+                <p><b>Вік:</b> <span id="info-age"></span></p>
+                <p><b>Стать:</b> <span id="info-gender"></span></p>
+                <p><b>Здоров'я:</b> <span id="info-health"></span></p>
+            </div>
+        </div>
+
+        <button id="admin-login-btn" class="btn admin-btn">Увійти як адмін</button>
+        <div id="admin-login-form" style="display:none;">
+            <input type="text" id="admin-login" placeholder="Логін">
+            <input type="password" id="admin-password" placeholder="Пароль">
+            <button id="admin-submit" class="btn save-btn">Увійти</button>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Притулок для тварин</p>
+    </footer>
+
+    <script>
+        // Перевірка чи адмін (наприклад, через локальне збереження токена)
+        const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+        if (isAdmin) {
+            document.getElementById("toggle-admin").style.display = "inline-block";
+        }
+
+        document.getElementById("toggle-admin").addEventListener("click", () => {
+            const panel = document.getElementById("admin-panel");
+            panel.style.display = panel.style.display === "none" ? "block" : "none";
+        });
+
+        // Перевірка чи користувач авторизований
+        function updateHeaderButtons() {
+            let user = localStorage.getItem('currentUser');
+            try { user = JSON.parse(user); } catch (e) {}
+            console.log('currentUser:', user);
+            const authLink = document.getElementById('auth-link');
+            const cabinetLink = document.getElementById('cabinet-link');
+            if (user) {
+                if (authLink) authLink.style.display = 'none';
+                if (cabinetLink) {
+                    cabinetLink.style.display = 'inline-block';
+                    if (!document.getElementById('logout-header-btn')) {
+                        const logoutBtn = document.createElement('button');
+                        logoutBtn.textContent = 'Вийти';
+                        logoutBtn.className = 'btn btn-secondary';
+                        logoutBtn.id = 'logout-header-btn';
+                        logoutBtn.style.marginLeft = '10px';
+                        logoutBtn.onclick = function() {
+                            localStorage.removeItem('currentUser');
+                            window.location.reload();
+                        };
+                        cabinetLink.parentNode.appendChild(logoutBtn);
+                    }
+                }
+            } else {
+                if (authLink) authLink.style.display = 'inline-block';
+                if (cabinetLink) cabinetLink.style.display = 'inline-block';
+                const logoutBtn = document.getElementById('logout-header-btn');
+                if (logoutBtn) logoutBtn.remove();
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateHeaderButtons);
+    </script>
+    <script src="animals.js" defer></script>
+</body>
+</html>

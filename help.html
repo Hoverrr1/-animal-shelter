@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Як допомогти — Притулок для тварин</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo-block">
+            <img src="logo.png" alt="Логотип" class="logo">
+            <span class="logo-title">Притулок для тварин</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Головна</a></li>
+                <li><a href="animals.html">Наші тварини</a></li>
+                <li><a href="help.html" class="active">Як допомогти</a></li>
+                <li><a href="contacts.html">Контакти</a></li>
+                <li><a href="auth.html" id="auth-link">Вхід/Реєстрація</a></li>
+                <li><a href="mycabinet.html" id="cabinet-link">Мій кабінет</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="help">
+            <h2>Як допомогти</h2>
+            <ul>
+                <li>Станьте волонтером</li>
+                <li>Пожертвуйте кошти або корм</li>
+                <li>Поширюйте інформацію про притулок</li>
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Притулок для тварин</p>
+    </footer>
+    <script>
+        function updateHeaderButtons() {
+            const user = localStorage.getItem('currentUser');
+            const authLink = document.getElementById('auth-link');
+            const cabinetLink = document.getElementById('cabinet-link');
+            if (user) {
+                if (authLink) authLink.style.display = 'none';
+                if (cabinetLink) {
+                    cabinetLink.style.display = 'inline-block';
+                    if (!document.getElementById('logout-header-btn')) {
+                        const logoutBtn = document.createElement('button');
+                        logoutBtn.textContent = 'Вийти';
+                        logoutBtn.className = 'btn btn-secondary';
+                        logoutBtn.id = 'logout-header-btn';
+                        logoutBtn.style.marginLeft = '10px';
+                        logoutBtn.onclick = function() {
+                            localStorage.removeItem('currentUser');
+                            window.location.reload();
+                        };
+                        cabinetLink.parentNode.appendChild(logoutBtn);
+                    }
+                }
+            } else {
+                if (authLink) authLink.style.display = 'inline-block';
+                if (cabinetLink) cabinetLink.style.display = 'inline-block';
+                const logoutBtn = document.getElementById('logout-header-btn');
+                if (logoutBtn) logoutBtn.remove();
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateHeaderButtons);
+    </script>
+</body>
+</html> 
